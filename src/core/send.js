@@ -36,15 +36,21 @@ module.exports = function(data)
       const regex11 = /(?<=<[^<>]*?)\.+(?=[^<>]*>)/gm;
       data.text = data.text.replace(regex11, ``);
       //  Remove Exclamation marks
-      data.text = data.text.replace(/<@!/gm, `<@`);
+      data.text = data.text.replace(/<@!/gmi, `<@`);
+      data.text = data.text.replace(/<!@/gmi, `<@`);
       //  Change formatted special characters to normal
       data.text = data.text.replace(/：/gmi, ":");
       data.text = data.text.replace(/，/gmi, ", ");
       data.text = data.text.replace(/、/gmi, ", ");
       data.text = data.text.replace(/！/gmi, "");
-      data.text.replace(/<A/gmi, "<a");
+      data.text = data.text.replace(/<A/gmi, "<a");
+      data.text = data.text.replace(/>/gmi, ">");
+      data.text = data.text.replace(/</gm, "<");
+      data.text = data.text.replace(/<А/gmi, "<a");
       data.text = data.text.replace(/＆/gmi, ``);
       data.text = data.text.replace(/></gm, `> <`);
+      data.text = data.text.replace(/＃/gmi, "#");
+      data.text = data.text.replace(/＃/gmi, "#");
    }
 
    if (data.author)
@@ -52,31 +58,35 @@ module.exports = function(data)
       if (data.text)
       {
          languageRegex(data);
-
+         data.text = data.text.replace(/<А/gmi, "<a");
          if (data.text.includes("<А"))
          {
-            const regex1 = /<([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
+            const regex1 = /<(a)([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
             const str1 = data.text;
-            const subst1 = `<a:customemoji:$2>`;
-
+            const subst1 = `<a:customemoji:$3>`;
             data.text = str1.replace(regex1, subst1);
          }
-         //   if a combination of animated emojis and normal custom emojis
-         if (data.text.includes("<:"))
+         if (data.text.includes("<a"))
          {
-            if (data.text.includes("<A"))
-            {
-               const regex4 = /<([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
-               const str4 = data.text;
-               const subst4 = `<a:customemoji:$2>`;
-
-               data.text = str4.replace(regex4, subst4);
-            }
-            const subst5 = "<:customemoji:$2>";
+            const regex4 = /<(a)([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
+            const str4 = data.text;
+            const subst4 = `<a:customemoji:$3>`;
+            data.text = str4.replace(regex4, subst4);
+         }
+         //   if a combination of animated emojis and normal custom emojis
+         if (!data.text.includes("<a") && data.text.includes("<:"))
+         {
+            const subst5 = "<:customemoji:$3>";
             const str5 = data.text;
-            const regx5 = /<([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
-
+            const regx5 = /<:([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*(:)\s*)([0-9\s]+)>/gmi;
             data.text = str5.replace(regx5, subst5);
+         }
+         if (data.text.includes("<a") && data.text.includes("<:"))
+         {
+            const regex20 = /<(a)([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*:\s*)([0-9\s]+)>/gmi;
+            const regex30 = /<:([:?\s:\s[a-z0-9ЁёА-я_A-Z\s\u00C0-\u017F]+\S*(:)\s*)([0-9\s]+)>/gmi;
+            data.text.replace(regex20, "<a:customemoji:$3>");
+            data.text.replace(regex30, "<:customemoji:$3>");
          }
       }
    }
@@ -347,12 +357,16 @@ const embedOff = function(data)
       {
          nicknameVar = message.member.nickname;
       }
-      else
+
+      if (data.text === undefined)
       {
          nicknameVar = message.author.username;
       }
+      if (data.text && message.member.nickname === undefined | null)
+      {
+         nicknameVar = data.author.username;
+      }
    }
-
    if (!message.member)
    {
       if (data.emoji)
@@ -418,6 +432,7 @@ const embedOff = function(data)
                "username": nicknameVar,
                "avatarURL": data.author.icon_url,
                "files": files
+
             });
          }
       }
