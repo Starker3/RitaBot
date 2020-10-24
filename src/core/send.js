@@ -51,6 +51,7 @@ module.exports = function(data)
       data.text = data.text.replace(/></gm, `> <`);
       data.text = data.text.replace(/＃/gmi, "#");
       data.text = data.text.replace(/＃/gmi, "#");
+      data.text = data.text.replace(/((\s?)(\*)(\s?))/gmis, "*")
    }
 
    if (data.author)
@@ -351,13 +352,12 @@ const embedOff = function(data)
    // Send Webhook Message
    // ---------------------
 
- /*  if (message.member)
+   /*  if (message.member)
    {
       if (message.member.nickname)
       {
          nicknameVar = message.member.nickname;
       }
-
       if (data.text === undefined)
       {
          nicknameVar = message.author.username;
@@ -374,7 +374,10 @@ const embedOff = function(data)
          nicknameVar = data.author.username;
       }
    }*/
-
+   if (data.author)
+   {
+      nicknameVar = data.author.name || data.author.username;
+   }
    function sendWebhookMessage(webhook, data)
    {
       if (data.author)
@@ -398,19 +401,11 @@ const embedOff = function(data)
       {
          if (data.text === undefined)
          {
-            if (message.member){
-            webhook.send(data.text, {
-               "username": message.member.nickname || message.author.username,
-               "avatarURL": message.author.displayAvatarURL,
-               "files": files
-            });
-            } else {
             webhook.send(data.text, {
                "username": message.author.username,
                "avatarURL": message.author.displayAvatarURL,
                "files": files
             });
-            }
          }
          else
          {
@@ -436,20 +431,11 @@ const embedOff = function(data)
             if (data.author.icon_url) { avatarURL = data.author.icon_url;}
          }
          {
-            if (message.member){
-           webhook.send(data.text, {
-               "username": message.member.nickname || data.author.name,
-               "avatarURL": data.author.icon_url,
-               "files": files
-           });
-            } else {
             webhook.send(data.text, {
-               "username": data.author.name,
+               "username": data.author.name || data.author.username,
                "avatarURL": data.author.icon_url,
                "files": files
-
             });
-            }
          }
       }
    }
